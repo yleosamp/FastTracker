@@ -1,0 +1,17 @@
+{
+  "name": "fasttracker",
+  "version": "0.4.4",
+  "private": true,
+  "description": "Tracking 2D local e open source para Adobe Premiere Pro",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "check": "node tools/check.cjs",
+    "qa": "node tools/qa.cjs"
+  },
+  "dependencies": {
+    "@techstark/opencv-js": "4.11.0-release.1",
+    "jpeg-js": "0.4.4"
+  },
+  "engines": { "node": ">=18" }
+}

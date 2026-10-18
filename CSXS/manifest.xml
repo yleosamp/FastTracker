@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.leoda.ponto-tracker" ExtensionBundleVersion="0.4.4" ExtensionBundleName="FastTracker">
+  <ExtensionList><Extension Id="com.leoda.ponto-tracker.panel" Version="0.4.4"/></ExtensionList>
+  <ExecutionEnvironment>
+    <HostList><Host Name="PPRO" Version="[25.0,99.9]"/></HostList>
+    <LocaleList><Locale Code="All"/></LocaleList>
+    <RequiredRuntimeList><RequiredRuntime Name="CSXS" Version="11.0"/></RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.leoda.ponto-tracker.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath><ScriptPath>./host/bridge.jsx</ScriptPath>
+          <CEFCommandLine><Parameter>--enable-nodejs</Parameter><Parameter>--allow-file-access-from-files</Parameter></CEFCommandLine>
+        </Resources>
+        <Lifecycle><AutoVisible>true</AutoVisible></Lifecycle>
+        <UI>
+          <Type>Panel</Type><Menu>FastTracker</Menu>
+          <Geometry><Size><Width>480</Width><Height>700</Height></Size><MinSize><Width>280</Width><Height>370</Height></MinSize></Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

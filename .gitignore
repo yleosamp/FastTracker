@@ -1,0 +1,9 @@
+node_modules/
+runtime.json
+CONTINUAR.md
+VALIDACAO.md
+*.zip
+*.ccx
+*.log
+test-output/
+.DS_Store
