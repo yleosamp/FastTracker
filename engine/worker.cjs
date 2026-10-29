@@ -12,6 +12,18 @@ let decoder = null;
 let cancelled = false;
 const emit = data => { if (process.connected) process.send(data); };
 
+function finish(message) {
+  if (!process.connected) return;
+  // A preview can exceed the IPC pipe buffer. Keep the channel alive until
+  // Node has flushed the final response, including when the parent is CEP.
+  function flushed(error) {
+    if (error) { console.error("Falha ao enviar o resultado do processamento: " + error.message); process.exitCode = 1; }
+    if (process.connected) process.disconnect();
+  }
+  try { process.send(message, flushed); }
+  catch (error) { flushed(error); }
+}
+
 function binaryOutput(file, args, maxBytes = 16 * 1024 * 1024) {
   return new Promise((resolve, reject) => {
     const child = spawn(file, args, { windowsHide: true, shell: false });
@@ -279,9 +291,10 @@ if (require.main === module) {
     // second decoder or steal the cancellation handle from the first one.
     if (acceptedJob) return;
     acceptedJob = true;
-    try { const result = await run(job); emit({ type: "done", result }); }
-    catch (error) { emit({ type: "error", message: error.message }); }
-    finally { if (process.connected) process.disconnect(); }
+    let response;
+    try { const result = await run(job); response = { type: "done", result }; }
+    catch (error) { response = { type: "error", message: error.message }; }
+    finish(response);
   });
   process.on("disconnect", () => { cancelled = true; if (decoder) decoder.kill(); });
 }

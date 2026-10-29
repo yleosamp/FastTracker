@@ -7,7 +7,7 @@ const vm = require("node:vm");
 const { EventEmitter } = require("node:events");
 function panel(storage = new Map()) {
   const elements = new Map(), calls = [], written = [], jobs = [], players = [], animationFrames = new Map();
-  let rafId = 0, trackHandler = null, holdTrack = false, frameFailure = null, imageFailure = false;
+  let rafId = 0, trackHandler = null, holdTrack = false, frameFailure = null, imageFailure = false, exitBeforeFrame = false, workerClose = null;
   let probeResult = { width: 64, height: 64, pixelAspectRatio: 1 };
   const drawingCalls = [];
   const drawing = new Proxy({}, { get(target, name) {
@@ -61,6 +61,11 @@ function panel(storage = new Map()) {
       jobs.push(job);
       if (job.type === "track" && holdTrack) { child.pending = true; return; }
       setImmediate(() => {
+        if (workerClose) {
+          child.emit("exit", workerClose.code, workerClose.signal);
+          if (workerClose.stderr) child.stderr.emit("data", Buffer.from(workerClose.stderr));
+          child.emit("close", workerClose.code, workerClose.signal); return;
+        }
         if (job.type === "cancel") { if (child.pending) child.emit("message", { type: "error", message: "Análise cancelada." }); return; }
         try {
           if (job.type === "frame" && frameFailure) throw new Error(frameFailure);
@@ -68,7 +73,9 @@ function panel(storage = new Map()) {
             : job.type === "audio" ? { hasAudio: true, waveform: [0.2, 0.6, 0.3, 0.8], cacheDir: "C:/ponto-test", audioFile: "C:/ponto-test/preview.wav", videoFile: "C:/ponto-test/preview.mp4" }
             : job.type === "probe" ? probeResult
             : trackHandler ? trackHandler(job, tracked) : tracked(job);
+          if (exitBeforeFrame && job.type === "frame") child.emit("exit", 0, null);
           child.emit("message", { type: "done", result });
+          child.emit("close", 0, null);
         } catch (error) { child.emit("message", { type: "error", message: error.message }); }
       });
     };
@@ -77,7 +84,7 @@ function panel(storage = new Map()) {
   const fakeWindow = { ...element("window"), requestAnimationFrame(fn) { const id = ++rafId; animationFrames.set(id, fn); return id; }, cancelAnimationFrame(id) { animationFrames.delete(id); },
     localStorage: { getItem: k => storage.get(k) || null, setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) }, __adobe_cep__: { evalScript(script, callback) {
     calls.push(script);
-    if (script.includes("$.evalFile")) { callback("0.5.0"); return; }
+    if (script.includes("$.evalFile")) { callback("0.5.1"); return; }
     if (script.includes("preparePaste")) { callback(JSON.stringify({ ok: true, source: currentSource, targets: selectedTargets })); return; }
     if (script.includes("prepareStabilize")) { callback(JSON.stringify({ ok: true, source: currentSource, targets: [currentSource] })); return; }
     if (script.includes("applyFromFile")) { callback(JSON.stringify(applicationFailure || { ok: true, targets: written.at(-1).targets.map(t => ({ id: t.target.id, keyframes: t.points.length })) })); return; }
@@ -96,7 +103,8 @@ function panel(storage = new Map()) {
     saved() { return JSON.parse(storage.get("ponto-tracker.clipboard.v1") || "null"); },
     setClip(value) { nextClip = value; }, select(values) { selectedTargets = values; }, failApplication(value) { applicationFailure = value; }, moveSource(value) { currentSource = value; },
     trackResponse(fn) { trackHandler = fn; }, holdTracking(value) { holdTrack = value; },
-    failFrame(value) { frameFailure = value; }, failImage(value) { imageFailure = value; }, probeResponse(value) { probeResult = value; }
+    failFrame(value) { frameFailure = value; }, failImage(value) { imageFailure = value; }, probeResponse(value) { probeResult = value; },
+    exitBeforeFrame(value) { exitBeforeFrame = value; }, closeWorker(value) { workerClose = value; }
   };
 }
 async function analyzed(p) { await p.ui.load.onclick(); p.ui.preview.onclick({ clientX: 80, clientY: 81 }); await p.ui.track.onclick(); }
@@ -136,6 +144,21 @@ test("Load preserves the real decoder error instead of replacing it with a gener
   assert.deepEqual(p.jobs.map(job => job.type), ["frame"]);
   p.failFrame(null); await p.ui.load.onclick();
   assert.equal(p.ui.empty.style.display, "none"); assert.equal(p.ui["audio-play"].disabled, false);
+});
+
+test("CEP exit delivered before the final frame message does not discard the preview", async () => {
+  const p = panel(); p.exitBeforeFrame(true); await p.ui.load.onclick();
+  assert.equal(p.ui.empty.style.display, "none");
+  assert.equal(p.ui["audio-play"].disabled, false);
+  assert.deepEqual(p.jobs.map(job => job.type), ["frame", "audio"]);
+});
+
+test("A worker crash reports its exit signal and stderr delivered after exit", async () => {
+  const p = panel(); p.closeWorker({ code: null, signal: "SIGABRT", stderr: "Runtime indisponível" });
+  await p.ui.load.onclick();
+  assert.match(p.ui.status.textContent, /SIGABRT.*Runtime indisponível/);
+  assert.equal(p.ui.status.className, "error");
+  assert.equal(p.ui.track.disabled, true);
 });
 
 test("A failed JPEG display cannot be mistaken for a successfully loaded frame", async () => {

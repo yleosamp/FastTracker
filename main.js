@@ -214,7 +214,13 @@
           if (message.image) image(message.image).catch(function () {});
         }
       });
-      child.on("error", function (error) { done(error); }); child.on("exit", function () { if (!settled) done(new Error(log || "O processo encerrou sem resultado.")); }); child.send(task);
+      // CEP can deliver exit before the last IPC message/stderr has drained.
+      // Only close is terminal; a preview already in transit must still win.
+      child.on("error", function (error) { done(error); });
+      child.on("close", function (code, signal) {
+        if (!settled) done(new Error("O motor de mídia encerrou sem resultado (" + (signal ? "sinal " + signal : "código " + code) + ")." + (log ? " " + log : "")));
+      });
+      child.send(task, function (error) { if (error) done(error); });
     });
   }
   function job(type) {
@@ -386,7 +392,7 @@
     if (!requireNode) throw new Error("Abra pelo Premiere: Janela > Extensões > FastTracker.");
     fs = requireNode("fs"); path = requireNode("path"); cp = requireNode("child_process"); os = requireNode("os");
     root = decodeURIComponent(location.pathname); if (/^\/[A-Za-z]:/.test(root)) root = root.slice(1); root = path.dirname(root); core = requireNode(path.join(root, "core.cjs"));
-    if (typeof core.mergeTracking !== "function" || typeof core.resolveRuntime !== "function") throw new Error("Feche e reabra o painel para carregar o FastTracker 0.5.0.");
+    if (typeof core.mergeTracking !== "function" || typeof core.resolveRuntime !== "function") throw new Error("Feche e reabra o painel para carregar o FastTracker 0.5.1.");
     config = core.resolveRuntime(JSON.parse(fs.readFileSync(path.join(root, "runtime.json"), "utf8")),root,path);
     if (![config.node, config.ffmpeg, config.ffprobe].every(function (p) { return p && fs.existsSync(p); })) throw new Error("Runtime incompleto. Execute INSTALAR.command no macOS ou INSTALAR.bat no Windows.");
     player = document.createElement("video"); player.preload = "auto"; player.playsInline = true; player.style.display = "none"; document.body.appendChild(player);
@@ -395,7 +401,7 @@
     if (window.__adobe_cep__) {
       var hostPath = path.join(root, "host", "bridge.jsx").replace(/\\/g, "/");
       window.__adobe_cep__.evalScript("$.evalFile(" + JSON.stringify(hostPath) + "); PontoTracker.version", function (version) {
-        if (version === "0.5.0") { hostReady = true; if (!restore()) status("Selecione um vídeo na timeline e carregue o clipe."); controls(); }
+        if (version === "0.5.1") { hostReady = true; if (!restore()) status("Selecione um vídeo na timeline e carregue o clipe."); controls(); }
         else { status("Reabra o painel para atualizar o conector do FastTracker.", "error"); controls(); }
       });
     }

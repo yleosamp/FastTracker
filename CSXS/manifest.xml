@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ExtensionManifest Version="7.0" ExtensionBundleId="com.leoda.ponto-tracker" ExtensionBundleVersion="0.5.0" ExtensionBundleName="FastTracker">
-  <ExtensionList><Extension Id="com.leoda.ponto-tracker.panel" Version="0.5.0"/></ExtensionList>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.leoda.ponto-tracker" ExtensionBundleVersion="0.5.1" ExtensionBundleName="FastTracker">
+  <ExtensionList><Extension Id="com.leoda.ponto-tracker.panel" Version="0.5.1"/></ExtensionList>
   <ExecutionEnvironment>
     <HostList><Host Name="PPRO" Version="[25.0,99.9]"/></HostList>
     <LocaleList><Locale Code="All"/></LocaleList>

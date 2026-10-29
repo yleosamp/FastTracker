@@ -1,6 +1,7 @@
 "use strict";
 const test = require("node:test"), assert = require("node:assert/strict");
 const fs = require("node:fs"), os = require("node:os"), path = require("node:path"), { spawnSync, fork } = require("node:child_process");
+const vm = require("node:vm"), { EventEmitter } = require("node:events");
 const { run, validateJob, jobRange, pcmWaveform } = require("../engine/worker.cjs");
 const ffmpeg = process.env.PONTO_FFMPEG || "C:\\Program Files\\Shutter Encoder\\app\\Library\\ffmpeg.exe";
 const ffprobe = process.env.PONTO_FFPROBE || path.join(path.dirname(ffmpeg), "ffprobe.exe");
@@ -12,6 +13,57 @@ function removeCache(result) {
   for (const filename of ["audio.wav", "preview.mp4"]) { const file = path.join(result.cacheDir, filename); if (fs.existsSync(file)) fs.unlinkSync(file); }
   fs.rmdirSync(result.cacheDir);
 }
+test("Worker keeps IPC connected until its final response has flushed", async () => {
+  const workerProcess = new EventEmitter(), entry = { exports: {} }, sent = [];
+  let flush, disconnects = 0;
+  workerProcess.connected = true;
+  workerProcess.send = (message, callback) => { sent.push(message); flush = callback; };
+  workerProcess.disconnect = () => { disconnects += 1; workerProcess.connected = false; workerProcess.emit("disconnect"); };
+  const workerRequire = name => require(name.startsWith(".") ? path.resolve(__dirname, "../engine", name) : name);
+  workerRequire.main = entry;
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname, "../engine/worker.cjs"), "utf8"), { require: workerRequire, module: entry, process: workerProcess, console });
+  await workerProcess.listeners("message")[0]({ type: "invalid" });
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].type, "error");
+  assert.equal(typeof flush, "function", "the final send registers a flush callback");
+  assert.equal(disconnects, 0, "a queued response keeps its IPC channel open");
+  flush(null);
+  assert.equal(disconnects, 1);
+});
+
+test("A real worker flushes a large JPEG preview before closing IPC", { skip: !available, timeout: 20000 }, async () => {
+  const folder = fs.mkdtempSync(path.join(os.tmpdir(), "fasttracker-ipc-preview-")), file = path.join(folder, "textured.ppm");
+  let child;
+  try {
+    const width = 960, height = 540, pixels = Buffer.alloc(width * height * 3);
+    let seed = 123456789;
+    for (let i = 0; i < pixels.length; i += 1) { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; pixels[i] = seed >>> 24; }
+    fs.writeFileSync(file, Buffer.concat([Buffer.from(`P6\n${width} ${height}\n255\n`), pixels]));
+    child = fork(path.join(__dirname, "../engine/worker.cjs"), [], { silent: true, windowsHide: true });
+    child.stdout.resume();
+    let stderr = "";
+    child.stderr.on("data", chunk => { stderr += chunk; });
+    const messages = [], events = [];
+    const completed = new Promise((resolve, reject) => {
+      child.on("message", message => { messages.push(message); events.push("message"); });
+      child.once("error", reject);
+      child.once("close", (code, signal) => { events.push("close"); resolve({ code, signal }); });
+    });
+    child.send({ type: "frame", config, file, inSeconds: 0, duration: 1, fps: 25, referenceFrame: 0 });
+    const closed = await completed;
+    assert.deepEqual(closed, { code: 0, signal: null }, stderr);
+    assert.equal(messages.length, 1, JSON.stringify(messages));
+    assert.equal(messages[0].type, "done", JSON.stringify(messages[0]));
+    assert.ok(messages[0].result.image.length > 100000, "the JPEG exceeds a typical IPC pipe buffer");
+    const decoded = require("jpeg-js").decode(Buffer.from(messages[0].result.image, "base64"));
+    assert.equal(decoded.width, width); assert.equal(decoded.height, height);
+    assert.deepEqual(events, ["message", "close"]);
+  } finally {
+    if (child && child.exitCode === null && child.signalCode === null) child.kill();
+    if (fs.existsSync(file)) fs.unlinkSync(file);
+    fs.rmdirSync(folder);
+  }
+});
 test("Tracking job bounds reject non-finite times, oversized work and references outside I/O", () => {
   assert.deepEqual(jobRange(validJob), { startFrame: 0, endFrame: 29 });
   validateJob(validJob);
