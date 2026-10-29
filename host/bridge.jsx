@@ -3,7 +3,7 @@
 var PontoTrackerState = typeof PontoTrackerState === "object" && PontoTrackerState ? PontoTrackerState : { owned: [] };
 var PontoTracker = (function () {
     var TICKS = 254016000000;
-    var api = { version: "0.4.4" };
+    var api = { version: "0.5.0" };
 
     function quote(value) {
         return '"' + String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[\u0000-\u001f\u2028\u2029]/g, function (c) {

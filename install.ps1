@@ -34,7 +34,7 @@ $cepRoot = [IO.Path]::GetFullPath((Join-Path $env:APPDATA 'Adobe\CEP\extensions'
 $destination = [IO.Path]::GetFullPath((Join-Path $cepRoot 'PontoTracker'))
 if (-not $destination.StartsWith($cepRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Destino fora da pasta CEP.' }
 New-Item -ItemType Directory -Path $destination -Force | Out-Null
-foreach ($entry in @('CSXS','engine','host','node_modules','index.html','styles.css','main.js','core.cjs','updates.cjs','updates-ui.js','package.json','package-lock.json','LICENSE','THIRD-PARTY-NOTICES.md','README.md')) {
+foreach ($entry in @('CSXS','engine','host','licenses','node_modules','index.html','styles.css','main.js','core.cjs','updates.cjs','updates-ui.js','package.json','package-lock.json','LICENSE','THIRD-PARTY-NOTICES.md','README.md')) {
     Copy-Item -LiteralPath (Join-Path $sourceRoot $entry) -Destination $destination -Recurse -Force
 }
 $runtime = @{ node=$nodeCommand.Source; ffmpeg=$FFmpegPath; ffprobe=$FFprobePath } | ConvertTo-Json

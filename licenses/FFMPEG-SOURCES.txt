@@ -1,0 +1,25 @@
+FFmpeg / FFprobe downloaded by the optional macOS installer
+
+Version: FFmpeg 9.0.2, independent precompiled builds by Martin Riedl.
+The FastTracker ZIP does not include the FFmpeg/FFprobe binaries. Installation
+downloads the unmodified archives from the builder and verifies pinned SHA-256.
+
+Build information, exact configuration and dependencies:
+https://ffmpeg.martin-riedl.de/info/detail/macos/amd64/1789931006_9.0.2
+https://ffmpeg.martin-riedl.de/info/detail/macos/arm64/1789931890_9.0.2
+https://ffmpeg.martin-riedl.de/download/macos/amd64/1789931006_9.0.2/versions.txt
+https://ffmpeg.martin-riedl.de/download/macos/arm64/1789931890_9.0.2/versions.txt
+Builder documentation and dependency sources: https://ffmpeg.martin-riedl.de/
+
+FFmpeg corresponding upstream source:
+https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz
+https://github.com/FFmpeg/FFmpeg/tree/n9.0.2
+
+The selected builds enable --enable-gpl --enable-version3 and GPL libraries
+including libx264/libx265. Treat the resulting FFmpeg programs as GPLv3+.
+A copy of the GNU General Public License version 3 is in GPL-3.0.txt.
+FFmpeg legal information and third-party notices:
+https://ffmpeg.org/legal.html
+
+FFmpeg runs as a separate, unmodified local program, not linked into the
+FastTracker panel. FastTracker's own original code remains MIT licensed.

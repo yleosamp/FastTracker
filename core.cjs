@@ -148,4 +148,13 @@ function transferFrames(result, source, target, smoothing = 0) {
   return output.map(p => ({ frame: p.frame, dx: p.dx - origin.dx, dy: p.dy - origin.dy }));
 }
 
-if (typeof module !== "undefined") module.exports = { trackingOffsets, aspectRatio, transferFrames, trackingBounds, missingRanges, selectTrackingRange, mergeTracking };
+function resolveRuntime(config, root, paths) {
+  var result = {};
+  ["node", "ffmpeg", "ffprobe"].forEach(function (key) {
+    var file = config && config[key];
+    if (typeof file !== "string" || !file || /[\x00-\x1f]/.test(file)) throw new Error("Runtime incompleto. Execute INSTALAR.command no macOS ou INSTALAR.bat no Windows.");
+    result[key] = /^(?:[A-Za-z]:[\\/]|\/|\\\\)/.test(file) ? file : paths.join(root, file);
+  });
+  return result;
+}
+if (typeof module !== "undefined") module.exports = { trackingOffsets, aspectRatio, transferFrames, trackingBounds, missingRanges, selectTrackingRange, mergeTracking, resolveRuntime };

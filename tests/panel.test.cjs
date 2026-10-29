@@ -77,7 +77,7 @@ function panel(storage = new Map()) {
   const fakeWindow = { ...element("window"), requestAnimationFrame(fn) { const id = ++rafId; animationFrames.set(id, fn); return id; }, cancelAnimationFrame(id) { animationFrames.delete(id); },
     localStorage: { getItem: k => storage.get(k) || null, setItem: (k, v) => storage.set(k, v), removeItem: k => storage.delete(k) }, __adobe_cep__: { evalScript(script, callback) {
     calls.push(script);
-    if (script.includes("$.evalFile")) { callback("0.4.4"); return; }
+    if (script.includes("$.evalFile")) { callback("0.5.0"); return; }
     if (script.includes("preparePaste")) { callback(JSON.stringify({ ok: true, source: currentSource, targets: selectedTargets })); return; }
     if (script.includes("prepareStabilize")) { callback(JSON.stringify({ ok: true, source: currentSource, targets: [currentSource] })); return; }
     if (script.includes("applyFromFile")) { callback(JSON.stringify(applicationFailure || { ok: true, targets: written.at(-1).targets.map(t => ({ id: t.target.id, keyframes: t.points.length })) })); return; }

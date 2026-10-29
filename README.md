@@ -1,15 +1,30 @@
-# FastTracker — 0.4.4 experimental
+# FastTracker — 0.5.0 experimental
 
-Painel local de tracking de ponto 2D para Premiere Pro no Windows. Código próprio, licença MIT. Selecione um vídeo, carregue, marque um detalhe e use **TRACK**. Depois, **PASTE TRACK** aplica o movimento aos itens selecionados; **STABILIZE** estabiliza o vídeo carregado. Não abre After Effects nem depende de tracking de máscara.
+Painel local de tracking de ponto 2D para Premiere Pro no Windows e macOS. Código próprio, licença MIT. Selecione um vídeo, carregue, marque um detalhe e use **TRACK**. Depois, **PASTE TRACK** aplica o movimento aos itens selecionados; **STABILIZE** estabiliza o vídeo carregado. Não abre After Effects nem depende de tracking de máscara.
 
-Versão pública experimental para **Windows**. [Baixar ZIP](https://github.com/yleosamp/FastTracker/releases/latest). Código próprio, sem vínculo com Adobe ou MotionPlug. macOS não tem instalador/suporte validado nesta versão.
+Distribuições **Windows** e **macOS (Intel + Apple Silicon)**: [Baixar ZIP da plataforma](https://github.com/yleosamp/FastTracker/releases/latest). Código próprio, sem vínculo com Adobe ou MotionPlug. O port Mac é experimental: não existe garantia de 100% em todo conjunto macOS/Premiere/hardware/Hackintosh. Testes por código/CI não certificam a UI nativa do Premiere.
 
 ## Instalar ou atualizar
+
+### macOS — instalação automática
+
+Requer **macOS 13 Ventura+** e Premiere **25/26 com CEP**. **Premiere 27 para Mac exige Apple Silicon**; um Hackintosh Intel precisa permanecer numa versão compatível do Premiere. [Aviso oficial da Adobe](https://community.adobe.com/announcements-504/important-notice-upcoming-system-requirement-changes-in-v27-0-1639158).
+
+1. Baixe **FastTracker-0.5.0-macOS.zip** e extraia.
+2. Botão direito em **INSTALAR.command > Abrir**. A arquitetura Intel/ARM é detectada automaticamente, inclusive em Terminal sob Rosetta.
+3. Aguarde o download automático e verificado de Node.js e FFmpeg/FFprobe privados do plugin (~150–250 MB). **Não precisa instalar Homebrew, npm, Node, Python ou FFmpeg por fora**, nem usar sudo.
+4. Abra **Janela > Extensões (Legacy) > FastTracker**. Feche/reabra o painel; se necessário, salve o trabalho e reinicie o Premiere.
+
+Depois da instalação, pode apagar o ZIP e a pasta extraída. Tudo necessário fica em `~/Library/Application Support/Adobe/CEP/extensions/PontoTracker`. Uma versão anterior é movida para backup em `~/Library/Application Support/Yleo Tools/FastTracker/backups`, antes da troca final; o instalador não mexe em projetos/mídias. Não instale o mesmo identificador em outra pasta CEP.
+
+O pacote inclui OpenCV.js/jpeg-js e os downloads nativos usam versões/URLs fixas com SHA-256: Node **22.23.4**, FFmpeg/FFprobe **9.0.2** (compilação independente de Martin Riedl). Falha de download, hash ou execução interrompe antes de substituir a instalação anterior. Requer internet apenas na instalação; processamento é local. O instalador comunitário **não é assinado/notarizado pela Apple**: macOS pode exigir **Privacidade e Segurança > Abrir Mesmo Assim** para esse arquivo. Não desative Gatekeeper/SIP globalmente. Somente a cópia privada do plugin tem seus atributos de quarentena tratados após a escolha de instalação.
+
+### Windows
 
 Requer Premiere Pro 25/26 com CEP, Node.js 18+ e FFmpeg/FFprobe. O instalador procura FFmpeg no PATH, no Shutter Encoder ou em `C:\ffmpeg\bin`.
 
 1. Extraia o ZIP e execute `INSTALAR.bat`. Node.js 18+ e FFmpeg/FFprobe precisam estar instalados (o instalador também encontra FFmpeg no Shutter Encoder).
-2. Feche e reabra o painel em **Janela > Extensões > FastTracker**. Confira **0.4.4** no cabeçalho.
+2. Feche e reabra o painel em **Janela > Extensões > FastTracker**. Confira **0.5.0** no cabeçalho.
 3. Se o nome antigo continuar em cache, salve o projeto e reinicie o Premiere quando for conveniente.
 
 A atualização mantém a pasta `%APPDATA%\Adobe\CEP\extensions\PontoTracker` e os identificadores internos `com.leoda.ponto-tracker` para preservar a instalação e o clipboard existentes. Não instale uma segunda cópia com outro identificador.
@@ -28,7 +43,11 @@ O instalador copia os arquivos, instala OpenCV.js/jpeg-js e grava os caminhos lo
 
 O painel consulta anonimamente `https://api.github.com/repos/yleosamp/FastTracker/releases/latest`, no máximo uma vez por 24 horas. Clique no número da versão para conferir manualmente. Quando há versão estável mais nova, aparece **↑ Atualizar**; só um clique abre a release no navegador. Não há download/instalação automática nem reinício do Premiere. Falhas de rede/cache não bloqueiam tracking. O cache contém somente data e versão, em `%TEMP%/fasttracker-updates.json`. Nenhum arquivo, caminho, projeto ou mídia é enviado; o GitHub recebe os metadados normais da conexão.
 
-123 testes automatizados passam. Testes de host simulado não certificam todos os comportamentos nativos do Premiere. Faça backup e revise o resultado antes de usar em produção.
+129 testes automatizados passam no ambiente de desenvolvimento. O workflow `macOS installer and engine` testa o instalador e os binários/motor em runners Intel e ARM; confira seu resultado na release correspondente. Testes de host simulado não certificam todos os comportamentos nativos do Premiere. Faça backup e revise o resultado antes de usar em produção.
+
+### English — macOS quick setup
+
+Extract the **macOS ZIP**, right-click **INSTALAR.command > Open**, and wait. The installer detects Intel/Apple Silicon and automatically downloads SHA-256-pinned private Node.js, FFmpeg and FFprobe binaries. No Homebrew/npm/manual runtime setup or sudo required. macOS 13+ and Premiere 25/26 with CEP; Intel/Hackintosh cannot run Premiere 27 for Mac. An unsigned community installer may require Open Anyway for this file only. Native Premiere/macOS behavior remains experimental. Existing installation is backed up before replacement; no projects/media are edited.
 
 1. Selecione **um clipe de vídeo** na timeline e clique em **Carregar clipe selecionado**.
 2. Navegue pela waveform ou pela barra de frames. O botão Play reproduz uma prévia local com o áudio do arquivo de origem, quando disponível; não é o Play do monitor do Premiere.

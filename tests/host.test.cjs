@@ -293,8 +293,8 @@ test("Insertion diff with fresh wrappers preserves a pre-existing animated Trans
   assert.equal(vm.runInContext('userEffect.properties[1].getValueAtKey(userTime)[0]', c), 0.7);
 });
 
-test("Host exposes FastTracker 0.4.4 without changing its compatible bridge name", () => {
-  assert.equal(vm.runInContext("PontoTracker.version", mockedHost()), "0.4.4");
+test("Host exposes FastTracker 0.5.0 without changing its compatible bridge name", () => {
+  assert.equal(vm.runInContext("PontoTracker.version", mockedHost()), "0.5.0");
 });
 
 test("Static source Position, Anchor, nonuniform Scale and Rotation are accepted and preserved", () => {

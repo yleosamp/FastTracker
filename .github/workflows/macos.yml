@@ -1,0 +1,32 @@
+name: macOS installer and engine
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mac-runtime:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15-intel, macos-15]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run check
+      - name: Install into the disposable runner user, without Premiere or sudo
+        run: bash ./INSTALAR.command
+      - name: Run native FFmpeg and real OpenCV worker tests on macOS
+        run: |
+          export PONTO_FFMPEG="$HOME/Library/Application Support/Adobe/CEP/extensions/PontoTracker/runtime/bin/ffmpeg"
+          export PONTO_FFPROBE="$HOME/Library/Application Support/Adobe/CEP/extensions/PontoTracker/runtime/bin/ffprobe"
+          "$HOME/Library/Application Support/Adobe/CEP/extensions/PontoTracker/runtime/bin/node" --test tests/*.test.cjs
+      - name: Build the macOS distribution with executable command permissions
+        run: node tools/package.cjs --platform macOS

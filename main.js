@@ -197,7 +197,7 @@
   }
   function worker(task) {
     return new Promise(function (resolve, reject) {
-      var child = cp.fork(path.join(root, "engine", "worker.cjs"), [], { execPath: config.node, windowsHide: true, silent: true }), settled = false, log = "", timeout;
+      var child = cp.fork(path.join(root, "engine", "worker.cjs"), [], { execPath: config.node, execArgv: [], windowsHide: true, silent: true }), settled = false, log = "", timeout;
       processJob = child; controls();
       function done(error, value) { if (settled) return; settled = true; clearTimeout(timeout); processJob = null; controls(); if (error) reject(error); else resolve(value); }
       timeout = setTimeout(function () { if (child.connected) child.send({ type: "cancel" }); done(new Error("Processamento excedeu 10 minutos; dados anteriores preservados.")); }, 600000);
@@ -386,16 +386,16 @@
     if (!requireNode) throw new Error("Abra pelo Premiere: Janela > Extensões > FastTracker.");
     fs = requireNode("fs"); path = requireNode("path"); cp = requireNode("child_process"); os = requireNode("os");
     root = decodeURIComponent(location.pathname); if (/^\/[A-Za-z]:/.test(root)) root = root.slice(1); root = path.dirname(root); core = requireNode(path.join(root, "core.cjs"));
-    if (typeof core.mergeTracking !== "function") throw new Error("Feche e reabra o painel para carregar o FastTracker 0.4.4.");
-    config = JSON.parse(fs.readFileSync(path.join(root, "runtime.json"), "utf8"));
-    if (![config.node, config.ffmpeg, config.ffprobe].every(function (p) { return p && fs.existsSync(p); })) throw new Error("Runtime incompleto. Execute INSTALAR.bat novamente.");
+    if (typeof core.mergeTracking !== "function" || typeof core.resolveRuntime !== "function") throw new Error("Feche e reabra o painel para carregar o FastTracker 0.5.0.");
+    config = core.resolveRuntime(JSON.parse(fs.readFileSync(path.join(root, "runtime.json"), "utf8")),root,path);
+    if (![config.node, config.ffmpeg, config.ffprobe].every(function (p) { return p && fs.existsSync(p); })) throw new Error("Runtime incompleto. Execute INSTALAR.command no macOS ou INSTALAR.bat no Windows.");
     player = document.createElement("video"); player.preload = "auto"; player.playsInline = true; player.style.display = "none"; document.body.appendChild(player);
     on(player, "seeked", redraw); on(player, "ended", stopPlayback);
     on(player, "error", function () { if (!proxyFailed && audio && audio.audioFile && player.src !== fileURL(audio.audioFile)) { proxyFailed = true; stopPlayback(); player.src = fileURL(audio.audioFile); player.load(); status("Vídeo não suportado neste CEP. Áudio e seleção de frames continuam disponíveis.", "warning"); } });
     if (window.__adobe_cep__) {
       var hostPath = path.join(root, "host", "bridge.jsx").replace(/\\/g, "/");
       window.__adobe_cep__.evalScript("$.evalFile(" + JSON.stringify(hostPath) + "); PontoTracker.version", function (version) {
-        if (version === "0.4.4") { hostReady = true; if (!restore()) status("Selecione um vídeo na timeline e carregue o clipe."); controls(); }
+        if (version === "0.5.0") { hostReady = true; if (!restore()) status("Selecione um vídeo na timeline e carregue o clipe."); controls(); }
         else { status("Reabra o painel para atualizar o conector do FastTracker.", "error"); controls(); }
       });
     }

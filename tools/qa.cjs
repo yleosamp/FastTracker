@@ -116,7 +116,7 @@ function installMocks({ coreSource, fixture }) {
     throw new Error("Unexpected module in QA browser: " + name);
   } };
   window.__adobe_cep__ = { evalScript(text, callback) {
-    if (/PontoTracker\.version$/.test(text)) { setTimeout(() => callback("0.4.4"), 0); return; }
+    if (/PontoTracker\.version$/.test(text)) { setTimeout(() => callback("0.5.0"), 0); return; }
     const match = /^PontoTracker\.([A-Za-z]+)\((.*)\)$/.exec(text);
     if (!match) throw new Error("Unexpected mocked host call.");
     const method = match[1], args = match[2] ? JSON.parse(match[2]) : null;

@@ -1,0 +1,34 @@
+FASTTRACKER — macOS Intel/Hackintosh e Apple Silicon
+
+1. Extraia o ZIP.
+2. Clique com o botão direito em INSTALAR.command > Abrir.
+3. Aguarde: Node.js e FFmpeg/FFprobe serão baixados e conferidos automaticamente.
+   Não precisa instalar Homebrew, Node, npm, Python ou FFmpeg por fora.
+4. No Premiere: Janela > Extensões (Legacy) > FastTracker.
+
+Internet é necessária na instalação (~150–250 MB, conforme a arquitetura).
+Depois, o tracking e as prévias funcionam localmente, sem servidor/login.
+Pode apagar o ZIP e a pasta extraída após concluir a instalação.
+
+Requisitos: macOS 13 Ventura ou superior; Premiere Pro 25/26 com CEP.
+Intel/Hackintosh NÃO executa o Premiere 27 para Mac: a Adobe exige Apple Silicon
+nessa versão. Não existe port de plugin que contorne esse requisito do host.
+Apple Silicon usa executáveis ARM nativos, inclusive sob Terminal/Rosetta.
+
+Este é um instalador comunitário, sem assinatura/notarização Apple.
+Se o macOS bloquear, confira a origem do download e permita apenas este
+instalador em Ajustes do Sistema > Privacidade e Segurança > Abrir Mesmo Assim.
+Não desative Gatekeeper/SIP globalmente.
+
+O instalador trabalha na pasta CEP do seu usuário, sem sudo/admin, e guarda
+backup de uma instalação anterior em:
+~/Library/Application Support/Yleo Tools/FastTracker/backups
+
+Não modifica seus projetos, clips ou arquivos de mídia.
+O suporte Mac é experimental: testes por código não substituem a validação
+nativa no seu conjunto macOS/Premiere/hardware/Hackintosh.
+
+English: right-click INSTALAR.command > Open. The installer automatically
+downloads and verifies private Node.js and FFmpeg binaries; no Homebrew/npm
+required. macOS 13+, Premiere 25/26 with CEP. Intel Macs cannot run Premiere 27.
+Unsigned community installer: macOS may require Open Anyway for this file only.
