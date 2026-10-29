@@ -116,7 +116,7 @@ function installMocks({ coreSource, fixture }) {
     throw new Error("Unexpected module in QA browser: " + name);
   } };
   window.__adobe_cep__ = { evalScript(text, callback) {
-    if (/PontoTracker\.version$/.test(text)) { setTimeout(() => callback("0.5.0"), 0); return; }
+    if (/PontoTracker\.version$/.test(text)) { setTimeout(() => callback("0.5.1"), 0); return; }
     const match = /^PontoTracker\.([A-Za-z]+)\((.*)\)$/.exec(text);
     if (!match) throw new Error("Unexpected mocked host call.");
     const method = match[1], args = match[2] ? JSON.parse(match[2]) : null;
@@ -300,6 +300,9 @@ async function main() {
         await page.setViewportSize({ width: 360, height: 420 });
         await page.locator("details").evaluate(e => e.open = true);
         await page.evaluate(() => scrollTo(0, 0));
+        // Read the resting thumb color independently of the previous pointer
+        // position; macOS Chromium can retain scrollbar hover after resizing.
+        await page.mouse.move(-20, -20);
         const style = await page.evaluate(() => {
           const root = document.documentElement;
           const bar = getComputedStyle(root, "::-webkit-scrollbar");

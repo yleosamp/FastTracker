@@ -1,4 +1,4 @@
-# FastTracker — 0.5.0 experimental
+# FastTracker — 0.5.1 experimental
 
 Painel local de tracking de ponto 2D para Premiere Pro no Windows e macOS. Código próprio, licença MIT. Selecione um vídeo, carregue, marque um detalhe e use **TRACK**. Depois, **PASTE TRACK** aplica o movimento aos itens selecionados; **STABILIZE** estabiliza o vídeo carregado. Não abre After Effects nem depende de tracking de máscara.
 
@@ -10,7 +10,7 @@ Distribuições **Windows** e **macOS (Intel + Apple Silicon)**: [Baixar ZIP da 
 
 Requer **macOS 13 Ventura+** e Premiere **25/26 com CEP**. **Premiere 27 para Mac exige Apple Silicon**; um Hackintosh Intel precisa permanecer numa versão compatível do Premiere. [Aviso oficial da Adobe](https://community.adobe.com/announcements-504/important-notice-upcoming-system-requirement-changes-in-v27-0-1639158).
 
-1. Baixe **FastTracker-0.5.0-macOS.zip** e extraia.
+1. Baixe **FastTracker-0.5.1-macOS.zip** e extraia.
 2. Botão direito em **INSTALAR.command > Abrir**. A arquitetura Intel/ARM é detectada automaticamente, inclusive em Terminal sob Rosetta.
 3. Aguarde o download automático e verificado de Node.js e FFmpeg/FFprobe privados do plugin (~150–250 MB). **Não precisa instalar Homebrew, npm, Node, Python ou FFmpeg por fora**, nem usar sudo.
 4. Abra **Janela > Extensões (Legacy) > FastTracker**. Feche/reabra o painel; se necessário, salve o trabalho e reinicie o Premiere.
@@ -24,7 +24,7 @@ O pacote inclui OpenCV.js/jpeg-js e os downloads nativos usam versões/URLs fixa
 Requer Premiere Pro 25/26 com CEP, Node.js 18+ e FFmpeg/FFprobe. O instalador procura FFmpeg no PATH, no Shutter Encoder ou em `C:\ffmpeg\bin`.
 
 1. Extraia o ZIP e execute `INSTALAR.bat`. Node.js 18+ e FFmpeg/FFprobe precisam estar instalados (o instalador também encontra FFmpeg no Shutter Encoder).
-2. Feche e reabra o painel em **Janela > Extensões > FastTracker**. Confira **0.5.0** no cabeçalho.
+2. Feche e reabra o painel em **Janela > Extensões > FastTracker**. Confira **0.5.1** no cabeçalho.
 3. Se o nome antigo continuar em cache, salve o projeto e reinicie o Premiere quando for conveniente.
 
 A atualização mantém a pasta `%APPDATA%\Adobe\CEP\extensions\PontoTracker` e os identificadores internos `com.leoda.ponto-tracker` para preservar a instalação e o clipboard existentes. Não instale uma segunda cópia com outro identificador.
@@ -39,11 +39,19 @@ O instalador copia os arquivos, instala OpenCV.js/jpeg-js e grava os caminhos lo
 
 ## Usar
 
+### Correção da 0.5.1 — carregar clipes no macOS
+
+Corrigido o erro **“O processo encerrou sem resultado”** ao carregar um clipe. O Node integrado ao CEP no Premiere para Mac pode entregar o evento `exit` antes da resposta do processo de mídia. O painel agora aguarda `close`, depois da leitura das mensagens e dos streams; o motor também aguarda o envio da resposta final antes de desconectar. Se houver uma falha real, a mensagem inclui o código/sinal de saída e o diagnóstico do motor.
+
+A ordem dos eventos foi reproduzida dentro do Premiere 26.5.2 com CEP/Node 17.7.2 e o Node privado 22.23.4 no macOS Intel. Os testes incluem essa ordem de eventos e a transmissão de um preview JPEG maior que o buffer do canal IPC. Para atualizar uma instalação existente, execute o instalador do pacote novo e feche/reabra o painel.
+
+Validação da correção: 133 testes automatizados passaram com os binários privados no macOS Intel, além de 23 verificações de interface em Chromium. A importação da 0.5.1 foi confirmada no Premiere instalado neste Mac.
+
 ### Atualizações e privacidade
 
 O painel consulta anonimamente `https://api.github.com/repos/yleosamp/FastTracker/releases/latest`, no máximo uma vez por 24 horas. Clique no número da versão para conferir manualmente. Quando há versão estável mais nova, aparece **↑ Atualizar**; só um clique abre a release no navegador. Não há download/instalação automática nem reinício do Premiere. Falhas de rede/cache não bloqueiam tracking. O cache contém somente data e versão, em `%TEMP%/fasttracker-updates.json`. Nenhum arquivo, caminho, projeto ou mídia é enviado; o GitHub recebe os metadados normais da conexão.
 
-129 testes automatizados passam no ambiente de desenvolvimento. O workflow `macOS installer and engine` testa o instalador e os binários/motor em runners Intel e ARM; confira seu resultado na release correspondente. Testes de host simulado não certificam todos os comportamentos nativos do Premiere. Faça backup e revise o resultado antes de usar em produção.
+133 testes automatizados passam no macOS Intel, usando Node.js e FFmpeg privados do plugin. O workflow `macOS installer and engine` testa o instalador e os binários/motor em runners Intel e ARM; confira seu resultado na release correspondente. Testes de host simulado não certificam todos os comportamentos nativos do Premiere. Faça backup e revise o resultado antes de usar em produção.
 
 ### English — macOS quick setup
 
